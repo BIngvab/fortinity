@@ -1,58 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="estilo.css">
     <title> Fortinity | Tienda de cuentas gamer </title>
+
 </head>
+
+
 <body>
+
     <header>
-        <h1>Fortinity</h1>
-        <p>Tu cuenta. Tu modo de juego. Tu nivel. Tus Skins</p>
+        <h1><em>Fortinity</em></h1>
+        <p><em>Tu cuenta. Tu modo de juego. Tu nivel. Tus Skins</em></p>
     </header>
+
+
     <nav>
+
+        <!--Link de navegacion de la pagina principal-->
         <ul>
+
             <li>
                 <a href="Main.html">Inicio</a>
             </li>
+
             <li>
                 <a href="Productos.html">Productos</a>
             </li>
+
             <li>
                 <a href="Nosotros.html">Sobre nosotros</a>
             </li>
+
             <li>
                 <a href="Blogs.html">Blog</a>
             </li>
+
             <li>
                 <a href="Contacto.html">Contacto</a>
             </li>
+
             <li>
                 <a href="Login.html">Iniciar Sesión</a>
             </li>
+
             <li>
                 <a href="Register.html">Registrarse</a>
             </li>
+
         </ul>
+
     </nav>
+
+
     <main>
 
+        <!--Parte inicial de la pagina web y donde se ven los productos-->
         <section>
+
             <h2> Bienvenidos a Fortinity</h2>
 
             <p>
-                Encuentra tu cuenta ideal para tus videojuegos favoritos.
+                <em>Encuentra tu cuenta ideal para tus videojuegos favoritos.</em>
             </p>
 
             <p>
-                Explora nuestro catalogo y encuentra la cuenta de tus sueños.
+                <em>Explora nuestro catalogo y encuentra la cuenta de tus sueños.</em>
             </p>
 
             <a href="Productos.html">Ver Productos</a>
+
         </section>
 
+
         <section>
+            <!-- Listado de las categorias de venta de cuentas o compras mas frecuentes o con descuentos en la pagina principal-->
+
             <h2>Categoria de Cuentas</h2>
 
             <ul>
@@ -66,58 +92,92 @@
 
         </section>
 
-        <section>
+
+        <section class="productos-destacados">
+
             <h2>Productos Destacados</h2>
 
-            <article>
-            <h3>Cuenta Fornite</h3>
-            <p>Cuenta con skins y contenido exclusivo</p>
-            <p>Valor: $29.990</p>
-            <button>Agregar al carrito</button>
-            </article>
+            <div class="lista-productos">
 
-            <article>
-            <h3>Cuenta League of Legends</h3>
-            <p>Cuenta con skins y contenido exclusivo</p>
-            <p>Valor: $34.990</p>
-            <button>Agregar al carrito</button>
-            </article>
+                <article class="producto">
+                    <img src="img/fortnite.jpg" alt="Cuenta Fortnite">
 
-            <article>
-            <h3>Cuenta Valorant</h3>
-            <p>Cuenta con skins y contenido exclusivo</p>
-            <p>Valor: $59.990</p>
-            <button>Agregar al carrito</button>
-            </article>
+                    <h3>Cuenta Fornite</h3>
+                    <p>Cuenta con skins y contenido exclusivo</p>
+                    <p>Valor: $29.990</p>
 
-            <article>
-            <h3>Cuenta Counter - Strike 2</h3>
-            <p>Cuenta con skins y contenido exclusivo</p>
-            <p>Valor: $59.990</p>
-            <button>Agregar al carrito</button>
-            </article>
+                    <button>Agregar al carrito</button>
 
-            <article>
-            <h3>Cuenta Steam</h3>
-            <p>Cuenta con un total de 90 titulos y 10 titulos triple A</p>
-            <p>Valor: $62.990</p>
-            <button>Agregar al carrito</button>
-            </article>
+                </article>
 
-            <article>
-            <h3>Cuenta Epic</h3>
-            <p>Cuenta con un total de 90 titulos y 10 titulos triple A</p>
-            <p>Valor: $29.990</p>
-            <button>Agregar al carrito</button>
-            </article>
 
+                <article class="producto">
+                    <img src="img/master.jpg" alt="Cuenta League of Legends">
+
+                    <h3>Cuenta League of Legends</h3>
+                    <p>Cuenta en rango <strong>Master</strong> con skins y contenido exclusivo</p>
+                    <p>Valor: $34.990</p>
+
+                    <button>Agregar al carrito</button>
+
+                </article>
+
+
+                <article class="producto">
+                    <img src="img/inmortal.jpg" alt="Cuenta Valorant">
+
+                    <h3>Cuenta Valorant</h3>
+                    <p>Cuenta con skins y contenido exclusivo</p>
+                    <p>Valor: $59.990</p>
+
+                    <button>Agregar al carrito</button>
+
+                </article>
+
+
+                <article class="producto">
+                    <img src="img/Mastercs.jpg" alt="Cuenta Counter - Strike 2">
+
+                    <h3>Cuenta Counter - Strike 2</h3>
+                    <p>Cuenta con skins y contenido exclusivo</p>
+                    <p>Valor: $59.990</p>
+
+                    <button>Agregar al carrito</button>
+
+                </article>
+
+
+                <article class="producto">
+                    <img src="img/steam games.png" alt="Cuenta Steam">
+
+                    <h3>Cuenta Steam</h3>
+                    <p>Cuenta con un total de 90 titulos y 10 titulos triple A</p>
+                    <p>Valor: $62.990</p>
+
+                    <button>Agregar al carrito</button>
+
+                </article>
+
+
+                <article class="producto">
+                    <img src="img/epic juegos.jpg" alt="Cuenta Epic">
+
+                    <h3>Cuenta Epic</h3>
+                    <p>Cuenta con un total de 90 titulos y 10 titulos triple A</p>
+                    <p>Valor: $29.990</p>
+
+                <button>Agregar al carrito</button>
+
+                </article>
+
+            </div>
+
+
+            <!-- Es la parte final de cada pagina web, aun esta por verse y modificarse-->
             <footer> (C) 2026 Fortinity. Todos los derechos reservados. 
-
                 <ul class="cf">
                     <li></li>
                 </ul>
-
-
             </footer>
 
 

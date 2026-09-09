@@ -1,0 +1,131 @@
+/* Configuracion del main*/
+
+body {
+    margin: 0;
+    font-family: arial, sans-serif;
+    background-color: #121212;
+    color: white;
+}
+
+
+/* Encabezado del main */
+
+header{
+    background-color: #1b1b1b;
+    text-align: center;
+    padding: 30px;
+    
+}
+
+h1{
+    margin: 0;
+    font-size: 40px;
+}
+
+p{
+    margin-top: 10px;
+}
+
+/* Menu de navegacion */
+
+nav{
+    background-color: #222222;
+    padding: 15px;
+}
+
+nav ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+nav li {
+    display: inline;
+    margin: 0 15px;
+}
+
+nav a{
+    color: white;
+    text-decoration: none;
+}
+
+nav a:hover{
+    text-decoration: underline;
+}
+
+/* Contenido de la pagina principal */
+
+main {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+/* Secciones/section */
+
+section {
+    margin-bottom: 50px;
+}
+
+section h2 {
+    font-size: 30px;
+    
+}
+
+/* Productos Destacados */
+
+article {
+    background-color: #1f1f1f;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 10px;
+}
+
+/* Botones de los productos */
+
+button{
+    background-color: #6c4cff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover{
+    background-color: #5638d6;
+}
+
+/* Pie de pagina */
+
+footer {
+    background-color: #1b1b1b;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+.productos-destacados {
+    margin-bottom: 40px;
+}
+
+.lista-productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.producto {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    width: 250px;
+}
+
+.producto img{
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
