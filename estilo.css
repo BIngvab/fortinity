@@ -199,6 +199,19 @@ form select {
     margin-bottom: 20px;
 }
 
+/* Sección Nosotros */
+
+.section-nosotros {
+    text-align: center;
+}
+
+.section-nosotros p {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
 .blog a {
     color: white;
 }
