@@ -3,3 +3,5 @@ Pagina donde encontre informacion acerca de los "footer" https://www.seobility.n
 Pagina donde encontre los codigos para los colores https://materializecss.com/color.html - https://htmlcolorcodes.com/es/ - chatgpt promt "Dame colores que le puedan servir a mi pagina web que se vean atractivos a la vista de un Gamer"
 
 Pagina donde encontre informacion acerca de los "Hover" https://materializecss.com/helpers.html
+
+Pagina donde encontre como hacer una imagen con link https://lineadecodigo.com/html/imagen-con-enlace-en-html/
