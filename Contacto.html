@@ -1,59 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="estilo.css">
-    <title> Fortinity | Contacto </title>
 
+    <title>Fortinity | Contacto</title>
 </head>
-
 
 <body>
 
     <header>
         <h1><em>Fortinity</em></h1>
-        <p><em>Tu cuenta. Tu modo de juego. Tu nivel. Tus Skins</em></p>
+        <p><em>Tu cuenta. Tu modo de juego. Tu nivel.</em></p>
     </header>
-
 
     <nav>
         <ul>
-            <li>
-                <a href="Main.html">Inicio</a>
-            </li>
-            <li>
-                <a href="Productos.html">Productos</a>
-            </li>
-            <li>
-                <a href="Nosotros.html">Sobre nosotros</a>
-            </li>
-            <li>
-                <a href="Blogs.html">Blog</a>
-            </li>
-            <li>
-                <a href="Contacto.html">Contacto</a>
-            </li>
-            <li>
-                <a href="Login.html">Iniciar Sesión</a>
-            </li>
-            <li>
-                <a href="Register.html">Registrarse</a>
-            </li>
+            <li><a href="Main.html">Inicio</a></li>
+            <li><a href="Productos.html">Productos</a></li>
+            <li><a href="Nosotros.html">Sobre nosotros</a></li>
+            <li><a href="Blogs.html">Blog</a></li>
+            <li><a href="Contacto.html">Contacto</a></li>
+            <li><a href="Login.html">Iniciar Sesión</a></li>
+            <li><a href="Register.html">Registrarse</a></li>
+            <li><a href="carrito.html">Carrito</a></li>
         </ul>
     </nav>
 
-    <!-- Es la parte final de cada pagina web, aun esta por verse y modificarse-->
-    <footer> (C) 2026 Fortinity. Todos los derechos reservados. 
+    <main>
 
-        <ul class="cf">
+        <section>
+            <h2>Contacto</h2>
 
-            <li></li>
+            <p>
+                Si tienes alguna duda o consulta, puedes escribirnos.
+            </p>
 
-        </ul>
+            <form id="formContacto" class="formulario">
+
+                <label for="contactoNombre">Nombre:</label>
+                <input type="text" id="contactoNombre">
+
+                <label for="contactoCorreo">Correo:</label>
+                <input type="email" id="contactoCorreo">
+
+                <label for="asunto">Asunto:</label>
+                <input type="text" id="asunto">
+
+                <label for="mensaje">Mensaje:</label>
+                <textarea id="mensaje"></textarea>
+
+                <button type="submit">Enviar mensaje</button>
+
+                <p id="mensajeContacto"></p>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <footer>
+        (C) 2026 Fortinity. Todos los derechos reservados.
     </footer>
 
+    <script src="script.js"></script>
 
 </body>
+
 </html>

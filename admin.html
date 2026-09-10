@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="estilo.css">
+
+    <title>Fortinity | Administración</title>
+</head>
+
+<body>
+
+    <header>
+        <h1><em>Fortinity</em></h1>
+        <p>Panel de administración</p>
+    </header>
+
+    <div class="admin-contenedor">
+
+        <aside class="menu-admin">
+
+            <h2>Administración</h2>
+
+            <a href="#inicio-admin">Inicio</a>
+            <a href="#productos-admin">Productos</a>
+            <a href="#usuarios-admin">Usuarios</a>
+
+        </aside>
+
+        <main class="admin-contenido">
+
+            <section id="inicio-admin">
+
+                <h2>Inicio</h2>
+
+                <p>
+                    Bienvenido al panel de administración de Fortinity.
+                </p>
+
+            </section>
+
+            <section id="productos-admin">
+
+                <h2>Crear producto</h2>
+
+                <form id="formProducto">
+
+                    <label>Nombre:</label>
+                    <input type="text" id="nombreProducto">
+
+                    <label>Precio:</label>
+                    <input type="number" id="precioProducto">
+
+                    <label>Categoría:</label>
+                    <input type="text" id="categoriaProducto">
+
+                    <button type="submit">Crear producto</button>
+
+                </form>
+
+                <div id="lista-productos-admin"></div>
+
+            </section>
+
+            <section id="usuarios-admin">
+
+                <h2>Crear usuario</h2>
+
+                <form id="formUsuario">
+
+                    <label>Nombre:</label>
+                    <input type="text" id="nombreUsuario">
+
+                    <label>Correo:</label>
+                    <input type="email" id="correoUsuario">
+
+                    <label>Tipo de usuario:</label>
+
+                    <select id="tipoUsuario">
+
+                        <option value="Admin">Administrador</option>
+                        <option value="Vendedor">Vendedor</option>
+                        <option value="Cliente">Cliente</option>
+
+                    </select>
+
+                    <button type="submit">Crear usuario</button>
+
+                </form>
+
+                <div id="lista-usuarios-admin"></div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
