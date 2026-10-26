@@ -108,6 +108,7 @@ footer {
 
 .productos-destacados {
     margin-bottom: 40px;
+    text-align: center;
 }
 
 .lista-productos {
@@ -122,6 +123,27 @@ footer {
     border-radius: 10px;
     width: 250px;
 }
+
+.catalogo {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px;
+    width: 95%;
+    margin: 20px auto;
+    align-items: stretch;
+
+}
+
+.productocatalogo {
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+    background-color: #202020;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
 
 .producto img{
     width: 100%;
