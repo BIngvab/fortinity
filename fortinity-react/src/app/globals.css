@@ -1,0 +1,286 @@
+/* Configuracion general de Fortinity */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: white;
+
+}
+
+
+/* Encabezado */
+
+header {
+    background-color: #1b1b1b !important;
+    text-align: center;
+    padding: 30px;
+
+}
+
+
+header h1 {
+    margin: 0;
+    font-size: 40px;
+
+}
+
+
+header p {
+    margin-top: 10px;
+
+}
+
+
+/* Menu de navegacion */
+
+nav.navbar {
+    background-color: #222222 !important;
+    padding: 15px;
+
+}
+
+
+nav a {
+    color: white;
+    text-decoration: none;
+
+}
+
+
+nav a:hover {
+    color: #b5a6ff;
+    text-decoration: underline;
+
+}
+
+
+/* Contenido principal */
+
+main {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+
+}
+
+
+section {
+    margin-bottom: 50px;
+
+}
+
+
+section h2 {
+    font-size: 30px;
+
+}
+
+
+/* Tarjetas de productos */
+
+.card {
+    background-color: #1f1f1f;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+
+}
+
+
+.card-img-top {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+
+}
+
+
+.card-body {
+    padding: 20px;
+
+}
+
+
+/* Botones */
+
+.btn-primary {
+    background-color: #6c4cff;
+    border-color: #6c4cff;
+    color: white;
+
+}
+
+
+.btn-primary:hover {
+    background-color: #5638d6;
+    border-color: #5638d6;
+    color: white;
+
+}
+
+
+/* Pie de pagina */
+
+footer {
+    background-color: #1b1b1b !important;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+
+}
+
+
+/* Formularios */
+
+.formulario {
+    max-width: 500px;
+    margin: 20px auto;
+
+}
+
+
+.formulario label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+
+}
+
+
+.formulario input,
+.formulario textarea,
+.formulario select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 10px;
+
+}
+
+
+.formulario textarea {
+    height: 120px;
+
+}
+
+
+/* Detalle de productos */
+
+.detalle-producto {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+
+}
+
+
+.detalle-producto img {
+    width: 400px;
+    max-width: 100%;
+    border-radius: 10px;
+
+}
+
+
+/* Blog */
+
+.blog {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+
+}
+
+
+.blog a {
+    color: white;
+
+}
+
+
+/* Sobre nosotros */
+
+.section-nosotros {
+    text-align: center;
+
+}
+
+
+.section-nosotros p {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+
+}
+
+
+/* Administracion */
+
+.admin-contenedor {
+    display: flex;
+    min-height: 500px;
+
+}
+
+
+.menu-admin {
+    width: 220px;
+    background-color: #1b1b1b;
+    padding: 20px;
+
+}
+
+
+.menu-admin a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 12px 5px;
+
+}
+
+
+.menu-admin a:hover {
+    background-color: #6c4cff;
+
+}
+
+
+.admin-contenido {
+    flex: 1;
+    padding: 30px;
+
+}
+
+
+/* Diseño responsivo */
+
+@media (max-width: 700px) {
+
+    .detalle-producto {
+        display: block;
+
+    }
+
+    .detalle-producto img {
+        width: 100%;
+
+    }
+
+    .admin-contenedor {
+        display: block;
+
+    }
+
+    .menu-admin {
+        width: auto;
+        
+    }
+
+}
