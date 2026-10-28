@@ -1,64 +1,8 @@
 import Link from "next/link";
+import ProductoCard from "../components/ProductoCard";
+import {productos} from "../data/productos";
 
 export default function Home() {
-
-  const productos = [
-    {
-      id: 1,
-      nombre: "Cuenta Fortnite",
-      descripcion: "Cuenta con skins y contenido exclusivo",
-      precio: 29990,
-      imagen: "/img/fortnite.jpg"
-
-    },
-
-    {
-      id: 2,
-      nombre: "Cuenta League of Legends",
-      descripcion: "Cuenta en rango Master con skins y contenido exclusivo",
-      precio: 34990,
-      imagen: "/img/master.jpg"
-
-    },
-
-    {
-      id: 3,
-      nombre: "Cuenta Valorant",
-      descripcion: "Cuenta con skins y contenido exclusivo",
-      precio: 59990,
-      imagen: "/img/inmortal.jpg"
-
-    },
-
-    {
-      id: 4,
-      nombre: "Cuenta Counter-Strike 2",
-      descripcion: "Cuenta con skins y contenido exclusivo",
-      precio: 59990,
-      imagen: "/img/Mastercs.jpg"
-
-    },
-
-    {
-      id: 5,
-      nombre: "Cuenta Steam",
-      descripcion: "Cuenta con un total de 90 títulos y 10 títulos triple A",
-      precio: 62990,
-      imagen: "/img/steam games.png"
-
-    },
-
-    {
-      id: 6,
-      nombre: "Cuenta Epic",
-      descripcion: "Cuenta con un total de 90 títulos y 10 títulos triple A",
-      precio: 29990,
-      imagen: "/img/epic juegos.jpg"
-
-    }
-  ];
-
-
   return (
     <>
       <main className="container my-5">
@@ -101,75 +45,25 @@ export default function Home() {
 
         <section>
 
-          <h2 className="text-center mb-4">Productos Destacados</h2>
+          <h2 className="text-center mb-4">
+            Productos Destacados
+          </h2>
+
 
           <div className="row g-4">
+            {productos.slice(0, 6).map((producto) => (
 
-            {productos.map((producto) => (
+              <ProductoCard
+                key={producto.id}
+                producto={producto}
 
-              <div className="col-12 col-md-6 col-lg-4" key={producto.id}>
-
-                <article className="card h-100">
-
-                  <img
-                    src={producto.imagen}
-                    className="card-img-top"
-                    alt={producto.nombre}
-
-                  />
-
-                  <div className="card-body d-flex flex-column">
-
-                    <h3 className="card-title h5">
-                      {producto.nombre}
-
-                    </h3>
-
-                    <p className="card-text">
-                      {producto.descripcion}
-
-                    </p>
-
-                    <p>
-                      Valor: ${producto.precio.toLocaleString("es-CL")}
-
-                    </p>
-
-                    <button
-                      className="btn btn-primary mt-auto"
-                      type="button"
-                      disabled
-
-                    >
-                      Agregar al carrito
-
-                    </button>
-
-                  </div>
-
-                </article>
-
-              </div>
-
+              />
             ))}
-
           </div>
 
         </section>
 
       </main>
-
-
-      <footer className="bg-dark text-white text-center py-4">
-
-        <p className="mb-0">
-          © 2026 Fortinity. Todos los derechos reservados.
-          
-        </p>
-
-      </footer>
-
     </>
   );
-
 }

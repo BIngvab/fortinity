@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ProductoCard from "../../components/ProductoCard";
 
 
 export default function Productos() {
@@ -77,44 +78,10 @@ export default function Productos() {
             <section>
                 <div className="row g-4">
                     {productos.map((producto) => (
-                        <div className="col-12 col-md-6 col-lg-4" key={producto.id}>
-                            <article className="card h-100">
-                                <img
-                                    src={producto.imagen}
-                                    className="card-img-top"
-                                    alt={producto.nombre}
-
-                                />
-
-                                <div className="card-body d-flex flex-column">
-                                    <h2 className="card-title h5">
-                                        {producto.nombre}
-
-                                    </h2>
-
-                                    <p className="card-text">
-                                        {producto.descripcion}
-
-                                    </p>
-
-                                    <p>
-                                        <strong>
-                                            Valor: ${producto.precio.toLocaleString("es-CL")}
-                                        </strong>
-
-                                    </p>
-
-
-                                    <button
-                                        className="btn btn-primary mt-auto"
-                                        type="button"
-                                        disabled
-                                    >
-                                        Agregar al carrito
-                                    </button>
-                                </div>
-                            </article>
-                        </div>
+                        <ProductoCard
+                            key={producto.id}
+                            producto={producto}
+                        />
                     ))}
                 </div>
             </section>
