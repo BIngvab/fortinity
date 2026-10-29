@@ -5,11 +5,18 @@ import { useCarrito } from "../../context/CarritoContext";
 
 
 export default function Carrito() {
-    const { carrito, eliminarDelCarrito } = useCarrito();
+    const { carrito, eliminarDelCarrito, vaciarCarrito } = useCarrito();
     const total = carrito.reduce((acumulador, producto) => {
         return acumulador + producto.precio;
 
     }, 0);
+
+    function comprar() {
+    alert("Compra realizada correctamente.");
+
+    vaciarCarrito();
+
+    }
 
 
     return (
@@ -60,11 +67,33 @@ export default function Carrito() {
 
                     ))}
 
-
                     <h3 className="text-end mt-4">
                         Total: ${total.toLocaleString("es-CL")}
 
                     </h3>
+
+                    <div className="text-end mt-3">
+
+
+                        <button
+                            className="btn btn-danger"
+                            type="button"
+                            onClick={vaciarCarrito}
+                        >
+                            Vaciar carrito
+
+                        </button>
+
+                        <button
+                            className="btn btn-success me-2"
+                            type="button"
+                            onClick={comprar}
+                        >
+                            Comprar
+
+                        </button>
+
+                    </div>
 
                 </section>
             )}

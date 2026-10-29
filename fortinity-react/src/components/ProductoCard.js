@@ -32,6 +32,7 @@ export default function ProductoCard({ producto }) {
                     <p>
                         <strong>
                             Valor: ${producto.precio.toLocaleString("es-CL")}
+                            
                         </strong>
 
                     </p>
