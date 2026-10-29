@@ -1,4 +1,10 @@
+"use client";
+
+import { useCarrito } from "../context/CarritoContext";
+
+
 export default function ProductoCard({ producto }) {
+    const { agregarAlCarrito } = useCarrito();
     return (
         <div className="col-12 col-md-6 col-lg-4">
             <article className="card h-100">
@@ -32,7 +38,8 @@ export default function ProductoCard({ producto }) {
                     <button
                         className="btn btn-primary mt-auto"
                         type="button"
-                        disabled
+                        onClick={() => agregarAlCarrito(producto)}
+                        
                     >
                         Agregar al carrito
                     </button>
