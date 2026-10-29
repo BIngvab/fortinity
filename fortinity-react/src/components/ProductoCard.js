@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useCarrito } from "../context/CarritoContext";
 
@@ -43,6 +44,15 @@ export default function ProductoCard({ producto }) {
                     >
                         Agregar al carrito
                     </button>
+                    <Link
+                        href={`/productos/${producto.id}`}
+                        className="btn btn-outline-light mt-2"
+                    >
+                        Ver detalles
+
+                    </Link>
+                    
+
                 </div>
             </article>
         </div>
