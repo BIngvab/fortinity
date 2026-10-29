@@ -29,7 +29,7 @@ export default function Navbar() {
 
                     </Link>
 
-                    <Link className="text-white" href="/blogs">
+                    <Link className="text-white" href="/blog">
                         Blog
 
                     </Link>
