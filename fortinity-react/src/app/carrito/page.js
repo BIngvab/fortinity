@@ -11,14 +11,7 @@ export default function Carrito() {
 
     }, 0);
 
-    function comprar() {
-    alert("Compra realizada correctamente.");
-
-    vaciarCarrito();
-
-    }
-
-
+    
     return (
         <main className="container my-5">
             <h2 className="text-center mb-4">
@@ -84,14 +77,13 @@ export default function Carrito() {
 
                         </button>
 
-                        <button
+                        <Link
+                            href="/checkout"
                             className="btn btn-success me-2"
-                            type="button"
-                            onClick={comprar}
                         >
                             Comprar
 
-                        </button>
+                        </Link>
 
                     </div>
 
