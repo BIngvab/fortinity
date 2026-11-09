@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { registroSchema } from "../../lib/validaciones";
 
 
 export default function Register() {
@@ -11,33 +12,46 @@ export default function Register() {
     const [password, setPassword] = useState("");
     const [confirmar, setConfirmar] = useState("");
     const [mensaje, setMensaje] = useState("");
+    const [errores, setErrores] = useState({});
+
 
 
     function registrarUsuario(event) {
-
         event.preventDefault();
 
-        if (!nombre.trim() || !correo.trim() || !password || !confirmar) {
-            setMensaje("Debes completar todos los campos.");
-            return;
+        setMensaje("");
+        setErrores({});
 
-        }
+        const resultado = registroSchema.safeParse({
+            nombre,
+            correo,
+            password,
+            confirmar
+        });
 
-        if (password !== confirmar) {
-            setMensaje("Las contraseñas no coinciden.");
-            return;
+        if (!resultado.success) {
 
-        }
+            const erroresFormulario = {};
 
-        if (password.length < 6) {
-            setMensaje("La contraseña debe tener al menos 6 caracteres.");
+            resultado.error.issues.forEach((error) => {
+
+                const campo = error.path[0];
+
+                if (!erroresFormulario[campo]) {
+                    erroresFormulario[campo] = error.message;
+
+                }
+
+            });
+
+            setErrores(erroresFormulario);
             return;
 
         }
 
         setMensaje("Formulario de registro validado correctamente.");
+}
 
-    }
 
 
     return (
@@ -82,6 +96,12 @@ export default function Register() {
                             required
                         />
 
+                        {errores.nombre && (
+                            <p className="text-danger mt-1">
+                                {errores.nombre}
+                            </p>
+                        )}
+
                     </div>
 
 
@@ -100,6 +120,12 @@ export default function Register() {
                             onChange={(event) => setCorreo(event.target.value)}
                             required
                         />
+
+                        {errores.correo && (
+                            <p className="text-danger mt-1">
+                                {errores.correo}
+                            </p>
+                        )}
 
                     </div>
 
@@ -120,6 +146,12 @@ export default function Register() {
                             required
                         />
 
+                        {errores.password && (
+                            <p className="text-danger mt-1">
+                                {errores.password}
+                            </p>
+                        )}
+
                     </div>
 
 
@@ -138,6 +170,12 @@ export default function Register() {
                             onChange={(event) => setConfirmar(event.target.value)}
                             required
                         />
+
+                        {errores.confirmar && (
+                            <p className="text-danger mt-1">
+                                {errores.confirmar}
+                            </p>
+                        )}
 
                     </div>
 
