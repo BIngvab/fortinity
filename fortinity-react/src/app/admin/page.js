@@ -2,101 +2,204 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { productos as productosOriginales } from "../../data/productos";
+import { peticionApi } from "../../lib/api";
 
-const CLAVE = "fortinityProductos";
+
+const formularioInicial = {
+
+    nombre: "",
+    descripcion: "",
+    precio: "",
+    descuento: 0,
+    stock: 0,
+    imagen: "",
+    plataforma: "",
+    desarrollador: "",
+    categoriaId: "",
+    destacado: false
+
+};
+
 
 export default function Admin() {
 
+    const [usuario, setUsuario] = useState(null);
     const [productos, setProductos] = useState([]);
-    const [nombre, setNombre] = useState("");
-    const [descripcion, setDescripcion] = useState("");
-    const [precio, setPrecio] = useState("");
-    const [imagen, setImagen] = useState("");
+    const [categorias, setCategorias] = useState([]);
+    const [formulario, setFormulario] = useState(formularioInicial);
+
     const [editando, setEditando] = useState(null);
+    const [mensaje, setMensaje] = useState("");
+    const [error, setError] = useState("");
+    const [cargando, setCargando] = useState(true);
+    const [guardando, setGuardando] = useState(false);
+
 
     useEffect(() => {
 
-        const guardados = localStorage.getItem(CLAVE);
+        async function iniciarPanel() {
 
-        try {
-            setProductos(guardados !== null
-                ? JSON.parse(guardados)
-                : productosOriginales
-            );
+            try {
 
-        } catch {
-            setProductos(productosOriginales);
-            
+                const perfil = await peticionApi("/auth/me");
+
+                setUsuario(perfil);
+
+                if (!["ADMIN", "VENDEDOR"].includes(perfil.rol)) {
+
+                    return;
+
+                }
+
+
+                const [listaProductos, listaCategorias] =
+                    await Promise.all([
+
+                        peticionApi("/productos/todos"),
+                        peticionApi("/categorias")
+
+                    ]);
+
+                setProductos(listaProductos);
+                setCategorias(listaCategorias);
+
+            } catch (error) {
+
+                setError(error.message);
+
+            } finally {
+
+                setCargando(false);
+
+            }
+
         }
+
+        iniciarPanel();
 
     }, []);
 
 
-    function actualizarProductos(nuevos) {
+    async function cargarProductos() {
 
-        setProductos(nuevos);
-        localStorage.setItem(CLAVE, JSON.stringify(nuevos));
+        const datos = await peticionApi("/productos/todos");
+
+        setProductos(datos);
+
+    }
+
+
+    function cambiarCampo(evento) {
+
+        const { name, value, checked, type } = evento.target;
+
+        setFormulario((actual) => ({
+
+            ...actual,
+            [name]: type === "checkbox" ? checked : value
+
+        }));
 
     }
 
 
     function limpiarFormulario() {
 
-        setNombre("");
-        setDescripcion("");
-        setPrecio("");
-        setImagen("");
+        setFormulario({ ...formularioInicial });
         setEditando(null);
 
     }
 
 
-    function guardarProducto(evento) {
+    async function guardarProducto(evento) {
 
         evento.preventDefault();
 
-        const valor = Number(precio);
+        if (guardando) return;
 
-        if (!nombre.trim() || !Number.isFinite(valor) || valor <= 0) {
-            alert("Ingresa un nombre y precio válidos.");
+        setMensaje("");
+        setError("");
 
-            return;
-        }
 
         const datos = {
-            nombre: nombre.trim(),
-            descripcion,
-            precio: valor,
-            imagen: imagen || "/img/fortnite.jpg"
+
+            nombre: formulario.nombre.trim(),
+            descripcion: formulario.descripcion,
+            precio: Number(formulario.precio),
+            descuento: Number(formulario.descuento),
+            stock: Number(formulario.stock),
+            imagen: formulario.imagen,
+            plataforma: formulario.plataforma,
+            desarrollador: formulario.desarrollador,
+            destacado: formulario.destacado
 
         };
 
-        if (editando !== null) {
 
-            const actualizados = productos.map((producto) =>
-                producto.id === editando
-                    ? { ...producto, ...datos }
-                    : producto
-            );
+        if (!datos.nombre || datos.precio <= 0) {
 
-            actualizarProductos(actualizados);
+            setError("Ingresa un nombre y precio válidos.");
 
-        } else {
-
-            const nuevoId = Math.max(
-                0,
-                ...productos.map((producto) => producto.id)
-            ) + 1;
-
-            actualizarProductos([
-                ...productos,
-                { id: nuevoId, ...datos }
-            ]);
+            return;
 
         }
 
-        limpiarFormulario();
+
+        setGuardando(true);
+
+
+        try {
+
+            if (editando !== null) {
+
+                await peticionApi(
+
+                    `/productos/${editando}?categoriaId=${formulario.categoriaId}`,
+
+                    {
+
+                        method: "PUT",
+                        body: JSON.stringify(datos)
+
+                    }
+
+                );
+
+                setMensaje("Producto actualizado correctamente.");
+
+            } else {
+
+                await peticionApi(
+
+                    `/productos?categoriaId=${formulario.categoriaId}`,
+
+                    {
+
+                        method: "POST",
+                        body: JSON.stringify(datos)
+
+                    }
+
+                );
+
+                setMensaje("Producto agregado correctamente.");
+
+            }
+
+
+            limpiarFormulario();
+
+            await cargarProductos();
+
+        } catch (error) {
+
+            setError(error.message);
+
+        } finally {
+
+            setGuardando(false);
+
+        }
 
     }
 
@@ -104,143 +207,474 @@ export default function Admin() {
     function editarProducto(producto) {
 
         setEditando(producto.id);
-        setNombre(producto.nombre);
-        setDescripcion(producto.descripcion);
-        setPrecio(String(producto.precio));
-        setImagen(producto.imagen);
 
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        setFormulario({
+
+            nombre: producto.nombre,
+            descripcion: producto.descripcion || "",
+            precio: producto.precio,
+            descuento: producto.descuento,
+            stock: producto.stock,
+            imagen: producto.imagen || "",
+            plataforma: producto.plataforma || "",
+            desarrollador: producto.desarrollador || "",
+            categoriaId: producto.categoriaId,
+            destacado: producto.destacado
+
+        });
+
+
+        setMensaje("");
+        setError("");
+
+        window.scrollTo({
+
+            top: 0,
+            behavior: "smooth"
+
+        });
 
     }
 
 
-    function eliminarProducto(id) {
+    async function cambiarEstado(producto) {
 
-        if (!confirm("¿Seguro que deseas eliminar este producto?")) {
+        if (guardando || usuario.rol !== "ADMIN") return;
+
+
+        const accion = producto.activo
+            ? "eliminar"
+            : "restaurar";
+
+
+        if (!confirm(`¿Deseas ${accion} este producto?`)) {
+
             return;
+
         }
 
-        actualizarProductos(
-            productos.filter((producto) => producto.id !== id)
+
+        setMensaje("");
+        setError("");
+        setGuardando(true);
+
+
+        try {
+
+            if (producto.activo) {
+
+                await peticionApi(`/productos/${producto.id}`, {
+
+                    method: "DELETE"
+
+                });
+
+                setMensaje("Producto desactivado correctamente.");
+
+            } else {
+
+                await peticionApi(
+
+                    `/productos/${producto.id}/restaurar`,
+
+                    {
+
+                        method: "PATCH"
+
+                    }
+
+                );
+
+                setMensaje("Producto restaurado correctamente.");
+
+            }
+
+
+            if (editando === producto.id) {
+
+                limpiarFormulario();
+
+            }
+
+
+            await cargarProductos();
+
+        } catch (error) {
+
+            setError(error.message);
+
+        } finally {
+
+            setGuardando(false);
+
+        }
+
+    }
+
+
+    if (cargando) {
+
+        return (
+
+            <main className="container my-5 text-center">
+
+                <h2>Cargando administración...</h2>
+
+            </main>
+
         );
 
-        if (editando === id) {
-            limpiarFormulario();
-        }
+    }
+
+
+    if (!usuario) {
+
+        return (
+
+            <main className="container my-5 text-center">
+
+                <h1>Inicia sesión</h1>
+
+                <p>
+                    Debes iniciar sesión para acceder a la administración.
+                </p>
+
+                {error && <p className="text-danger">{error}</p>}
+
+                <Link href="/login" className="btn btn-primary">
+
+                    Iniciar sesión
+
+                </Link>
+
+            </main>
+
+        );
 
     }
 
 
-    function restaurarProductos() {
+    if (!["ADMIN", "VENDEDOR"].includes(usuario.rol)) {
 
-        if (!confirm("¿Restaurar los productos originales?")) {
-            return;
-        }
+        return (
 
-        actualizarProductos(productosOriginales);
-        limpiarFormulario();
+            <main className="container my-5 text-center">
+
+                <h1>Acceso denegado</h1>
+
+                <p>No tienes permisos para acceder a esta sección.</p>
+
+                <Link href="/" className="btn btn-primary">
+
+                    Volver al inicio
+
+                </Link>
+
+            </main>
+
+        );
 
     }
 
 
     return (
+
         <main className="container my-5">
 
             <h1 className="text-center mb-4">
+
                 Administración de productos
 
             </h1>
 
             <p className="text-center">
-                Crear, consultar, actualizar y eliminar productos.
+
+                Usuario: {usuario.nombre} | Rol: {usuario.rol}
 
             </p>
 
+
+            {mensaje && (
+
+                <div className="alert alert-success">
+
+                    {mensaje}
+
+                </div>
+
+            )}
+
+
+            {error && (
+
+                <div className="alert alert-danger">
+
+                    {error}
+
+                </div>
+
+            )}
+
+
             <div className="card p-4 mb-4">
 
-                <h2 className="h4">
+                <h2 className="h4 mb-3">
+
                     {editando !== null
                         ? "Editar producto"
                         : "Agregar producto"}
+
                 </h2>
+
 
                 <form onSubmit={guardarProducto}>
 
                     <div className="mb-3">
 
                         <label className="form-label">
+
                             Nombre del producto
 
                         </label>
 
                         <input
-                            type="text"
                             className="form-control"
-                            value={nombre}
-                            onChange={(evento) => setNombre(evento.target.value)}
+                            name="nombre"
+                            value={formulario.nombre}
+                            onChange={cambiarCampo}
+                            maxLength={150}
                             required
                         />
 
                     </div>
 
+
                     <div className="mb-3">
 
                         <label className="form-label">
+
                             Descripción
 
                         </label>
 
                         <textarea
                             className="form-control"
-                            value={descripcion}
-                            onChange={(evento) => setDescripcion(evento.target.value)}
+                            name="descripcion"
+                            value={formulario.descripcion}
+                            onChange={cambiarCampo}
                         />
 
                     </div>
 
+
+                    <div className="row">
+
+                        <div className="col-md-4 mb-3">
+
+                            <label className="form-label">
+
+                                Precio
+
+                            </label>
+
+                            <input
+                                type="number"
+                                className="form-control"
+                                name="precio"
+                                min="1"
+                                step="1"
+                                value={formulario.precio}
+                                onChange={cambiarCampo}
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="col-md-4 mb-3">
+
+                            <label className="form-label">
+
+                                Descuento (%)
+
+                            </label>
+
+                            <input
+                                type="number"
+                                className="form-control"
+                                name="descuento"
+                                min="0"
+                                max="100"
+                                value={formulario.descuento}
+                                onChange={cambiarCampo}
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="col-md-4 mb-3">
+
+                            <label className="form-label">
+
+                                Stock
+
+                            </label>
+
+                            <input
+                                type="number"
+                                className="form-control"
+                                name="stock"
+                                min="0"
+                                value={formulario.stock}
+                                onChange={cambiarCampo}
+                                required
+                            />
+
+                        </div>
+
+                    </div>
+
+
                     <div className="mb-3">
 
                         <label className="form-label">
-                            Precio
+
+                            Categoría
 
                         </label>
 
-                        <input
-                            type="number"
-                            min="1"
-                            className="form-control"
-                            value={precio}
-                            onChange={(evento) => setPrecio(evento.target.value)}
+                        <select
+                            className="form-select"
+                            name="categoriaId"
+                            value={formulario.categoriaId}
+                            onChange={cambiarCampo}
                             required
-                        />
+                        >
+
+                            <option value="">
+
+                                Selecciona una categoría
+
+                            </option>
+
+                            {categorias.map((categoria) => (
+
+                                <option
+                                    key={categoria.id}
+                                    value={categoria.id}
+                                >
+
+                                    {categoria.nombre}
+
+                                </option>
+
+                            ))}
+
+                        </select>
 
                     </div>
+
 
                     <div className="mb-3">
 
                         <label className="form-label">
+
                             Imagen
 
                         </label>
 
                         <input
-                            type="text"
                             className="form-control"
+                            name="imagen"
                             placeholder="/img/fortnite.jpg"
-                            value={imagen}
-                            onChange={(evento) => setImagen(evento.target.value)}
+                            value={formulario.imagen}
+                            onChange={cambiarCampo}
+                            maxLength={1000}
                         />
 
                     </div>
 
+
+                    <div className="row">
+
+                        <div className="col-md-6 mb-3">
+
+                            <label className="form-label">
+
+                                Plataforma
+
+                            </label>
+
+                            <input
+                                className="form-control"
+                                name="plataforma"
+                                value={formulario.plataforma}
+                                onChange={cambiarCampo}
+                                maxLength={100}
+                            />
+
+                        </div>
+
+
+                        <div className="col-md-6 mb-3">
+
+                            <label className="form-label">
+
+                                Desarrollador
+
+                            </label>
+
+                            <input
+                                className="form-control"
+                                name="desarrollador"
+                                value={formulario.desarrollador}
+                                onChange={cambiarCampo}
+                                maxLength={150}
+                            />
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="form-check mb-3">
+
+                        <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="destacado"
+                            name="destacado"
+                            checked={formulario.destacado}
+                            onChange={cambiarCampo}
+                        />
+
+                        <label
+                            className="form-check-label"
+                            htmlFor="destacado"
+                        >
+
+                            Producto destacado
+
+                        </label>
+
+                    </div>
+
+
                     <button
                         type="submit"
                         className="btn btn-success me-2"
+                        disabled={guardando}
                     >
-                        {editando !== null
-                            ? "Guardar cambios"
-                            : "Agregar producto"}
+
+                        {guardando
+                            ? "Procesando..."
+                            : editando !== null
+                                ? "Guardar cambios"
+                                : "Agregar producto"}
+
                     </button>
+
 
                     {editando !== null && (
 
@@ -248,8 +682,11 @@ export default function Admin() {
                             type="button"
                             className="btn btn-secondary"
                             onClick={limpiarFormulario}
+                            disabled={guardando}
                         >
+
                             Cancelar
+
                         </button>
 
                     )}
@@ -259,21 +696,33 @@ export default function Admin() {
             </div>
 
 
-            <h2>Lista de productos</h2>
+            <h2 className="mb-3">
+
+                Lista de productos
+
+            </h2>
+
 
             <div className="table-responsive">
 
-                <table className="table table-dark table-striped">
+                <table className="table table-dark table-striped align-middle">
 
                     <thead>
+
                         <tr>
+
                             <th>ID</th>
                             <th>Nombre</th>
+                            <th>Categoría</th>
                             <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
-                            
+
                         </tr>
+
                     </thead>
+
 
                     <tbody>
 
@@ -283,29 +732,66 @@ export default function Admin() {
 
                                 <td>{producto.id}</td>
 
+
                                 <td>{producto.nombre}</td>
 
+
+                                <td>{producto.categoria}</td>
+
+
                                 <td>
-                                    ${producto.precio.toLocaleString("es-CL")}
+                                    ${Number(producto.precio).toLocaleString("es-CL")}
                                 </td>
+
+
+                                <td>{producto.stock}</td>
+
+
+                                <td>
+
+                                    <span className={producto.activo
+                                        ? "badge bg-success"
+                                        : "badge bg-danger"}>
+
+                                        {producto.activo
+                                            ? "Activo"
+                                            : "Inactivo"}
+
+                                    </span>
+
+                                </td>
+
 
                                 <td>
 
                                     <button
                                         className="btn btn-warning btn-sm me-2"
                                         onClick={() => editarProducto(producto)}
+                                        disabled={guardando}
                                     >
+
                                         Editar
 
                                     </button>
 
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => eliminarProducto(producto.id)}
-                                    >
-                                        Eliminar
 
-                                    </button>
+                                    {usuario.rol === "ADMIN" && (
+
+                                        <button
+                                            className={producto.activo
+                                                ? "btn btn-danger btn-sm"
+                                                : "btn btn-success btn-sm"}
+                                            onClick={() => cambiarEstado(producto)}
+                                            disabled={guardando}
+                                        >
+
+                                            {producto.activo
+                                                ? "Eliminar"
+                                                : "Restaurar"}
+
+                                        </button>
+
+                                    )}
 
                                 </td>
 
@@ -319,19 +805,13 @@ export default function Admin() {
 
             </div>
 
-            <button
-                className="btn btn-outline-warning me-2"
-                onClick={restaurarProductos}
-            >
-                Restaurar productos
-            </button>
 
             <Link href="/productos" className="btn btn-primary">
+
                 Ver catálogo
 
             </Link>
 
         </main>
     );
-
 }
