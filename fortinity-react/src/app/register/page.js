@@ -2,68 +2,106 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { registroSchema } from "../../lib/validaciones";
+import { useRouter } from "next/navigation";
+import { peticionApi, guardarSesion } from "../../lib/api";
 
 
 export default function Register() {
 
+    const router = useRouter();
+
     const [nombre, setNombre] = useState("");
     const [correo, setCorreo] = useState("");
     const [password, setPassword] = useState("");
-    const [confirmar, setConfirmar] = useState("");
+    const [confirmarPassword, setConfirmarPassword] = useState("");
     const [mensaje, setMensaje] = useState("");
-    const [errores, setErrores] = useState({});
+    const [cargando, setCargando] = useState(false);
 
 
+    async function registrarUsuario(event) {
 
-    function registrarUsuario(event) {
         event.preventDefault();
 
         setMensaje("");
-        setErrores({});
 
-        const resultado = registroSchema.safeParse({
-            nombre,
-            correo,
-            password,
-            confirmar
-        });
 
-        if (!resultado.success) {
+        if (!nombre.trim() || !correo.trim() || !password.trim()) {
 
-            const erroresFormulario = {};
+            setMensaje("Debes completar todos los campos.");
 
-            resultado.error.issues.forEach((error) => {
-
-                const campo = error.path[0];
-
-                if (!erroresFormulario[campo]) {
-                    erroresFormulario[campo] = error.message;
-
-                }
-
-            });
-
-            setErrores(erroresFormulario);
             return;
 
         }
 
-        setMensaje("Formulario de registro validado correctamente.");
-}
 
+        if (password.length < 8) {
+
+            setMensaje("La contraseña debe tener al menos 8 caracteres.");
+
+            return;
+
+        }
+
+
+        if (password !== confirmarPassword) {
+
+            setMensaje("Las contraseñas no coinciden.");
+
+            return;
+
+        }
+
+
+        setCargando(true);
+
+
+        try {
+
+            const datos = await peticionApi("/auth/register", {
+
+                method: "POST",
+
+                autenticado: false,
+
+                body: JSON.stringify({
+
+                    nombre: nombre.trim(),
+
+                    email: correo.trim(),
+
+                    password
+
+                })
+
+            });
+
+
+            guardarSesion(datos);
+
+            router.push("/");
+
+        } catch (error) {
+
+            setMensaje(error.message);
+
+        } finally {
+
+            setCargando(false);
+
+        }
+
+    }
 
 
     return (
+
         <main className="container my-5">
+
             <section className="text-center mb-5">
 
                 <h1 className="fw-bold">Registrarse</h1>
 
-                <p>
-                    Completa el formulario para comenzar en Fortinity.
-
-                </p>
+                <p>Crea tu cuenta en Fortinity.</p>
 
             </section>
 
@@ -74,7 +112,7 @@ export default function Register() {
             >
 
                 <h2 className="h4 text-center mb-4">
-                    Crear una cuenta
+                    Crear cuenta
 
                 </h2>
 
@@ -82,6 +120,7 @@ export default function Register() {
                 <form onSubmit={registrarUsuario}>
 
                     <div className="mb-3">
+
                         <label htmlFor="nombre" className="form-label">
                             Nombre:
 
@@ -95,12 +134,6 @@ export default function Register() {
                             onChange={(event) => setNombre(event.target.value)}
                             required
                         />
-
-                        {errores.nombre && (
-                            <p className="text-danger mt-1">
-                                {errores.nombre}
-                            </p>
-                        )}
 
                     </div>
 
@@ -121,12 +154,6 @@ export default function Register() {
                             required
                         />
 
-                        {errores.correo && (
-                            <p className="text-danger mt-1">
-                                {errores.correo}
-                            </p>
-                        )}
-
                     </div>
 
 
@@ -146,36 +173,24 @@ export default function Register() {
                             required
                         />
 
-                        {errores.password && (
-                            <p className="text-danger mt-1">
-                                {errores.password}
-                            </p>
-                        )}
-
                     </div>
 
 
                     <div className="mb-3">
 
-                        <label htmlFor="confirmar" className="form-label">
+                        <label htmlFor="confirmarPassword" className="form-label">
                             Confirmar contraseña:
 
                         </label>
 
                         <input
                             type="password"
-                            id="confirmar"
+                            id="confirmarPassword"
                             className="form-control"
-                            value={confirmar}
-                            onChange={(event) => setConfirmar(event.target.value)}
+                            value={confirmarPassword}
+                            onChange={(event) => setConfirmarPassword(event.target.value)}
                             required
                         />
-
-                        {errores.confirmar && (
-                            <p className="text-danger mt-1">
-                                {errores.confirmar}
-                            </p>
-                        )}
 
                     </div>
 
@@ -183,8 +198,10 @@ export default function Register() {
                     <button
                         type="submit"
                         className="btn btn-primary w-100"
+                        disabled={cargando}
                     >
-                        Registrarse
+
+                        {cargando ? "Registrando..." : "Registrarse"}
 
                     </button>
 
@@ -193,7 +210,7 @@ export default function Register() {
 
                 {mensaje && (
 
-                    <p className="text-center mt-3">
+                    <p className="text-danger text-center mt-3">
                         {mensaje}
 
                     </p>
@@ -206,8 +223,8 @@ export default function Register() {
                     ¿Ya tienes una cuenta?{" "}
 
                     <Link href="/login">
-                        Iniciar Sesión
-                        
+                        Iniciar sesión
+
                     </Link>
 
                 </p>
@@ -215,6 +232,6 @@ export default function Register() {
             </section>
 
         </main>
-    );
 
+    );
 }
