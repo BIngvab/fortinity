@@ -3,47 +3,74 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { productos as productosOriginales } from "../../../data/productos";
 
 
 export default function DetalleProducto() {
 
     const { id } = useParams();
 
+
     const [producto, setProducto] = useState(null);
     const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState("");
 
 
     useEffect(() => {
 
-        const guardados = localStorage.getItem("fortinityProductos");
+        async function cargarProducto() {
 
-        let listaProductos = productosOriginales;
+            setCargando(true);
 
-        if (guardados !== null) {
+            setProducto(null);
+
+            setError("");
+
 
             try {
 
-                const datos = JSON.parse(guardados);
+                const respuesta = await fetch(
+                    "/api/productos",
+                    {
+                        cache: "no-store"
+                    }
+                );
 
-                if (Array.isArray(datos)) {
-                    listaProductos = datos;
+
+                if (!respuesta.ok) {
+
+                    throw new Error("Error al cargar producto");
+
                 }
+
+
+                const datos = await respuesta.json();
+
+
+                const encontrado = datos.find(
+
+                    (producto) => producto.id === Number(id)
+
+                );
+
+
+                setProducto(encontrado || null);
 
             } catch (error) {
 
-                console.error("Error al cargar productos:", error);
+                console.error(error);
+
+                setError("No se pudo conectar con el servidor.");
+
+            } finally {
+
+                setCargando(false);
 
             }
 
         }
 
-        const encontrado = listaProductos.find(
-            (producto) => producto.id === Number(id)
-        );
 
-        setProducto(encontrado || null);
-        setCargando(false);
+        cargarProducto();
 
     }, [id]);
 
@@ -51,11 +78,13 @@ export default function DetalleProducto() {
     if (cargando) {
 
         return (
+
             <main className="container my-5 text-center">
 
                 <p>Cargando producto...</p>
 
             </main>
+
         );
 
     }
@@ -64,9 +93,11 @@ export default function DetalleProducto() {
     if (!producto) {
 
         return (
+
             <main className="container my-5 text-center">
 
-                <h1>Producto no encontrado</h1>
+                <h1>{error || "Producto no encontrado"}</h1>
+
 
                 <Link
                     href="/productos"
@@ -77,12 +108,14 @@ export default function DetalleProducto() {
                 </Link>
 
             </main>
+
         );
 
     }
 
 
     return (
+
         <main className="container my-5">
 
             <div className="row align-items-center g-4">
@@ -104,9 +137,30 @@ export default function DetalleProducto() {
 
                     <p>{producto.descripcion}</p>
 
+
                     <h3>
                         ${producto.precio.toLocaleString("es-CL")}
+
                     </h3>
+
+
+                    <p>
+                        Categoría: {producto.categoria}
+
+                    </p>
+
+
+                    <p>
+                        Plataforma: {producto.plataforma || "No especificada"}
+
+                    </p>
+
+
+                    <p>
+                        Stock disponible: {producto.stock}
+
+                    </p>
+
 
                     <Link
                         href="/productos"
@@ -121,6 +175,6 @@ export default function DetalleProducto() {
             </div>
 
         </main>
-    );
 
+    );
 }

@@ -10,6 +10,8 @@ export default function Productos() {
     const [productos, setProductos] = useState([]);
     const [busqueda, setBusqueda] = useState("");
     const [error, setError] = useState("");
+    const [cargando, setCargando] = useState(true);
+
 
     useEffect(() => {
 
@@ -17,47 +19,39 @@ export default function Productos() {
 
             try {
 
-                const respuesta = await fetch("/api/productos");
+                const respuesta = await fetch(
+                    "/api/productos",
+                    {
+                        cache: "no-store"
+                    }
+                );
+
 
                 if (!respuesta.ok) {
+
                     throw new Error("Error al obtener los productos");
+
                 }
+
 
                 const datos = await respuesta.json();
-                const guardados = localStorage.getItem("fortinityProductos");
 
-                if (guardados !== null) {
-
-                    try {
-
-                        const productosGuardados = JSON.parse(guardados);
-
-                        setProductos(
-                            Array.isArray(productosGuardados)
-                                ? productosGuardados
-                                : datos
-                        );
-
-                    } catch {
-
-                        setProductos(datos);
-
-                    }
-
-                } else {
-
-                    setProductos(datos);
-
-                }
+                setProductos(datos);
 
             } catch (error) {
 
                 console.error("Error al cargar productos:", error);
+
                 setError("No se pudieron cargar los productos.");
+
+            } finally {
+
+                setCargando(false);
 
             }
 
         }
+
 
         cargarProductos();
 
@@ -74,6 +68,7 @@ export default function Productos() {
 
 
     return (
+
         <main className="container my-5">
 
             <section className="text-center mb-5">
@@ -82,7 +77,7 @@ export default function Productos() {
 
                 <p>
                     Encuentra cuentas con contenido exclusivo para tus juegos favoritos.
-                    
+
                 </p>
 
                 <input
@@ -97,11 +92,23 @@ export default function Productos() {
             </section>
 
 
+            {cargando && (
+
+                <p className="text-center">
+                    Cargando productos...
+
+                </p>
+
+            )}
+
+
             {error && (
+
                 <p className="alert alert-danger">
                     {error}
 
                 </p>
+
             )}
 
 
@@ -120,7 +127,8 @@ export default function Productos() {
 
                 </div>
 
-                {productosFiltrados.length === 0 && !error && (
+
+                {productosFiltrados.length === 0 && !error && !cargando && (
 
                     <p className="text-center mt-4">
                         No se encontraron productos.
@@ -142,6 +150,6 @@ export default function Productos() {
             </div>
 
         </main>
-    );
 
+    );
 }
