@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCarrito } from "../../../context/CarritoContext";
+import { calcularPrecioFinal, formatearPrecio } from "../../../lib/precios";
 
 
 export default function DetalleProducto() {
 
     const { id } = useParams();
+
+    const { agregarAlCarrito } = useCarrito();
 
 
     const [producto, setProducto] = useState(null);
@@ -20,19 +24,20 @@ export default function DetalleProducto() {
         async function cargarProducto() {
 
             setCargando(true);
-
             setProducto(null);
-
             setError("");
 
 
             try {
 
                 const respuesta = await fetch(
+
                     "/api/productos",
+
                     {
                         cache: "no-store"
                     }
+
                 );
 
 
@@ -103,6 +108,7 @@ export default function DetalleProducto() {
                     href="/productos"
                     className="btn btn-primary"
                 >
+
                     Volver al catálogo
 
                 </Link>
@@ -112,6 +118,11 @@ export default function DetalleProducto() {
         );
 
     }
+
+
+    const precioFinal = calcularPrecioFinal(producto);
+
+    const tieneDescuento = Number(producto.descuento) > 0;
 
 
     return (
@@ -135,37 +146,94 @@ export default function DetalleProducto() {
 
                     <h1>{producto.nombre}</h1>
 
+
                     <p>{producto.descripcion}</p>
 
 
-                    <h3>
-                        ${producto.precio.toLocaleString("es-CL")}
+                    {tieneDescuento ? (
 
-                    </h3>
+                        <div className="mb-3">
+
+                            <span className="text-decoration-line-through text-secondary me-2">
+
+                                ${formatearPrecio(producto.precio)}
+
+                            </span>
+
+
+                            <span className="badge bg-success">
+
+                                -{producto.descuento}%
+
+                            </span>
+
+
+                            <h3 className="text-success mt-2">
+
+                                ${formatearPrecio(precioFinal)}
+
+                            </h3>
+
+                        </div>
+
+                    ) : (
+
+                        <h3>
+
+                            ${formatearPrecio(precioFinal)}
+
+                        </h3>
+
+                    )}
 
 
                     <p>
+
                         Categoría: {producto.categoria}
 
                     </p>
 
 
                     <p>
+
                         Plataforma: {producto.plataforma || "No especificada"}
 
                     </p>
 
 
                     <p>
+
+                        Desarrollador: {producto.desarrollador || "No especificado"}
+
+                    </p>
+
+
+                    <p>
+
                         Stock disponible: {producto.stock}
 
                     </p>
 
 
+                    <button
+                        type="button"
+                        className="btn btn-primary mt-3 me-2"
+                        disabled={producto.stock <= 0}
+                        onClick={() => agregarAlCarrito(producto)}
+                    >
+
+                        {producto.stock <= 0
+                            ? "Sin stock"
+                            : "Agregar al carrito"}
+
+                    </button>
+
+
                     <Link
                         href="/productos"
-                        className="btn btn-primary mt-3"
+                        className="btn btn-outline-light mt-3"
                     >
+
                         Volver al catálogo
 
                     </Link>

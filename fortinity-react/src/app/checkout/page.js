@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useCarrito } from "../../context/CarritoContext";
 import { peticionApi, obtenerUsuario } from "../../lib/api";
+import { calcularPrecioFinal, formatearPrecio } from "../../lib/precios";
+
 
 export default function Checkout() {
 
@@ -25,14 +27,21 @@ export default function Checkout() {
     }, []);
 
 
-    const total = carrito.reduce((acumulador, producto) => {
+    const subtotal = carrito.reduce((acumulador, producto) => {
 
-        const precio = Number(producto.precio);
-        const descuento = Number(producto.descuento || 0);
-
-        return acumulador + precio * (1 - descuento / 100);
+        return acumulador + Number(producto.precio);
 
     }, 0);
+
+
+    const total = carrito.reduce((acumulador, producto) => {
+
+        return acumulador + calcularPrecioFinal(producto);
+
+    }, 0);
+
+
+    const ahorro = subtotal - total;
 
 
     async function confirmarCompra(evento) {
@@ -59,11 +68,14 @@ export default function Checkout() {
                 } else {
 
                     productos[producto.id] = {
+
                         productoId: Number(producto.id),
                         cantidad: 1
+
                     };
 
                 }
+
             });
 
 
@@ -80,7 +92,6 @@ export default function Checkout() {
 
             vaciarCarrito();
 
-
         } catch (error) {
 
             setMensaje(error.message);
@@ -90,10 +101,12 @@ export default function Checkout() {
             setCargando(false);
 
         }
+
     }
 
 
     if (!listo) {
+
         return <main className="container my-5">Cargando...</main>;
 
     }
@@ -108,6 +121,7 @@ export default function Checkout() {
                 <div className="card p-4">
 
                     <h1 className="text-success">
+
                         ¡Compra realizada correctamente!
 
                     </h1>
@@ -120,20 +134,25 @@ export default function Checkout() {
 
                     <h3>Boleta N° {resumen.id}</h3>
 
-                    <p>Cliente: {resumen.cliente}</p>
+                    <p>Cliente: {resumen.cliente || usuario?.nombre}</p>
 
                     <p>Estado: {resumen.estado}</p>
 
 
                     <p>
+
                         Fecha: {new Date(resumen.fecha).toLocaleString("es-CL")}
+
                     </p>
 
 
                     <p>Entrega: Digital</p>
 
+
                     <h3>
-                        Total: ${Number(resumen.total).toLocaleString("es-CL")}
+
+                        Total: ${formatearPrecio(resumen.total)}
+
                     </h3>
 
 
@@ -142,10 +161,15 @@ export default function Checkout() {
                         Volver al inicio
 
                     </Link>
+
                 </div>
+
             </main>
+
         );
+
     }
+
 
     if (!usuario) {
 
@@ -165,8 +189,11 @@ export default function Checkout() {
                 </Link>
 
             </main>
+
         );
+
     }
+
 
     if (usuario.rol !== "CLIENTE") {
 
@@ -186,8 +213,11 @@ export default function Checkout() {
                 </Link>
 
             </main>
+
         );
+
     }
+
 
     if (carrito.length === 0) {
 
@@ -207,7 +237,9 @@ export default function Checkout() {
                 </Link>
 
             </main>
+
         );
+
     }
 
 
@@ -231,7 +263,9 @@ export default function Checkout() {
                         <div className="mb-3">
 
                             <label className="form-label">
+
                                 Nombre completo
+
                             </label>
 
 
@@ -241,14 +275,15 @@ export default function Checkout() {
                                 readOnly
                             />
 
-
                         </div>
 
 
                         <div className="mb-3">
 
                             <label className="form-label">
+
                                 Correo electrónico
+
                             </label>
 
 
@@ -264,7 +299,9 @@ export default function Checkout() {
                         <div className="mb-3">
 
                             <label className="form-label">
+
                                 Tipo de entrega
+
                             </label>
 
 
@@ -279,7 +316,7 @@ export default function Checkout() {
 
                         <button
                             type="submit"
-                            className="btn btn-success"
+                            className="btn btn-success me-2"
                             disabled={cargando}
                         >
 
@@ -288,6 +325,16 @@ export default function Checkout() {
                                 : "Confirmar compra"}
 
                         </button>
+
+
+                        <Link
+                            href="/carrito"
+                            className="btn btn-outline-light"
+                        >
+
+                            Volver al carrito
+
+                        </Link>
 
 
                         {mensaje && (
@@ -299,7 +346,9 @@ export default function Checkout() {
                             </p>
 
                         )}
+
                     </form>
+
                 </div>
 
 
@@ -309,21 +358,84 @@ export default function Checkout() {
 
                         <h3>Resumen del pedido</h3>
 
+                        <hr />
+
+
                         {carrito.map((producto, index) => (
 
-                            <p key={index}>
+                            <div key={index} className="mb-3">
 
-                                {producto.nombre} - ${Number(producto.precio).toLocaleString("es-CL")}
+                                <strong>{producto.nombre}</strong>
 
-                            </p>
+
+                                {Number(producto.descuento) > 0 ? (
+
+                                    <div>
+
+                                        <span className="text-decoration-line-through text-secondary me-2">
+
+                                            ${formatearPrecio(producto.precio)}
+
+                                        </span>
+
+
+                                        <span className="badge bg-success">
+
+                                            -{producto.descuento}%
+
+                                        </span>
+
+
+                                        <p className="text-success mt-2 mb-0">
+
+                                            ${formatearPrecio(calcularPrecioFinal(producto))}
+
+                                        </p>
+
+                                    </div>
+
+                                ) : (
+
+                                    <p>
+
+                                        ${formatearPrecio(calcularPrecioFinal(producto))}
+
+                                    </p>
+
+                                )}
+
+                            </div>
 
                         ))}
 
+
                         <hr />
+
+
+                        <p>
+
+                            Subtotal: ${formatearPrecio(subtotal)}
+
+                        </p>
+
+
+                        {ahorro > 0 && (
+
+                            <p className="text-success">
+
+                                Descuentos: -${formatearPrecio(ahorro)}
+
+                            </p>
+
+                        )}
+
+
+                        <hr />
+
 
                         <h4>
 
-                            Total estimado: ${total.toLocaleString("es-CL")}
+                            Total estimado: ${formatearPrecio(total)}
 
                         </h4>
 
