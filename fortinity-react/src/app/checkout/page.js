@@ -1,54 +1,108 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCarrito } from "../../context/CarritoContext";
-
+import { peticionApi, obtenerUsuario } from "../../lib/api";
 
 export default function Checkout() {
 
     const { carrito, vaciarCarrito } = useCarrito();
-    const [nombre, setNombre] = useState("");
-    const [correo, setCorreo] = useState("");
-    const [direccion, setDireccion] = useState("");
-    const [entrega, setEntrega] = useState("digital");
-    const [compraRealizada, setCompraRealizada] = useState(false);
+
+
+    const [usuario, setUsuario] = useState(null);
     const [resumen, setResumen] = useState(null);
+    const [mensaje, setMensaje] = useState("");
+    const [cargando, setCargando] = useState(false);
+    const [listo, setListo] = useState(false);
+
+
+    useEffect(() => {
+
+        setUsuario(obtenerUsuario());
+        setListo(true);
+
+    }, []);
+
 
     const total = carrito.reduce((acumulador, producto) => {
-        return acumulador + producto.precio;
+
+        const precio = Number(producto.precio);
+        const descuento = Number(producto.descuento || 0);
+
+        return acumulador + precio * (1 - descuento / 100);
 
     }, 0);
 
 
-    function confirmarCompra(evento) {
+    async function confirmarCompra(evento) {
 
         evento.preventDefault();
 
-        if (carrito.length === 0) {
-            return;
+        if (cargando || carrito.length === 0) return;
+
+
+        setMensaje("");
+        setCargando(true);
+
+
+        try {
+
+            const productos = {};
+
+            carrito.forEach((producto) => {
+
+                if (productos[producto.id]) {
+
+                    productos[producto.id].cantidad++;
+
+                } else {
+
+                    productos[producto.id] = {
+                        productoId: Number(producto.id),
+                        cantidad: 1
+                    };
+
+                }
+            });
+
+
+            const boleta = await peticionApi("/boletas/comprar", {
+
+                method: "POST",
+
+                body: JSON.stringify(Object.values(productos))
+
+            });
+
+
+            setResumen(boleta);
+
+            vaciarCarrito();
+
+
+        } catch (error) {
+
+            setMensaje(error.message);
+
+        } finally {
+
+            setCargando(false);
 
         }
+    }
 
-        setResumen({
-            nombre,
-            correo,
-            direccion,
-            entrega,
-            productos: [...carrito],
-            total
 
-        });
-
-        vaciarCarrito();
-        setCompraRealizada(true);
+    if (!listo) {
+        return <main className="container my-5">Cargando...</main>;
 
     }
 
 
-    if (compraRealizada && resumen) {
+    if (resumen) {
 
         return (
+
             <main className="container my-5">
 
                 <div className="card p-4">
@@ -58,44 +112,33 @@ export default function Checkout() {
 
                     </h1>
 
-                    <p>
-                        Gracias por comprar en Fortinity.
 
+                    <p>Gracias por comprar en Fortinity.</p>
+
+                    <hr />
+
+
+                    <h3>Boleta N° {resumen.id}</h3>
+
+                    <p>Cliente: {resumen.cliente}</p>
+
+                    <p>Estado: {resumen.estado}</p>
+
+
+                    <p>
+                        Fecha: {new Date(resumen.fecha).toLocaleString("es-CL")}
                     </p>
 
-                    <h3>Resumen de compra</h3>
 
-                    <p>Cliente: {resumen.nombre}</p>
-                    <p>Correo: {resumen.correo}</p>
-
-                    <p>
-                        Entrega: {resumen.entrega === "digital"
-                            ? "Entrega digital"
-                            : "Entrega a domicilio"}
-
-                    </p>
-
-                    {resumen.entrega === "domicilio" && (
-                        <p>Dirección: {resumen.direccion}</p>
-
-                    )}
-
-                    {resumen.productos.map((producto, index) => (
-
-                        <p key={index}>
-                            {producto.nombre} -
-                            ${producto.precio.toLocaleString("es-CL")}
-
-                        </p>
-
-                    ))}
+                    <p>Entrega: Digital</p>
 
                     <h3>
-                        Total: ${resumen.total.toLocaleString("es-CL")}
-
+                        Total: ${Number(resumen.total).toLocaleString("es-CL")}
                     </h3>
 
+
                     <Link href="/" className="btn btn-primary mt-3">
+
                         Volver al inicio
 
                     </Link>
@@ -104,17 +147,61 @@ export default function Checkout() {
         );
     }
 
+    if (!usuario) {
+
+        return (
+
+            <main className="container my-5 text-center">
+
+                <h1>Inicia sesión para comprar</h1>
+
+                <p>Debes ingresar a tu cuenta de Fortinity.</p>
+
+
+                <Link href="/login" className="btn btn-primary">
+
+                    Iniciar sesión
+
+                </Link>
+
+            </main>
+        );
+    }
+
+    if (usuario.rol !== "CLIENTE") {
+
+        return (
+
+            <main className="container my-5 text-center">
+
+                <h1>Compra no disponible</h1>
+
+                <p>Debes utilizar una cuenta de cliente para comprar.</p>
+
+
+                <Link href="/" className="btn btn-primary">
+
+                    Volver al inicio
+
+                </Link>
+
+            </main>
+        );
+    }
 
     if (carrito.length === 0) {
 
         return (
+
             <main className="container my-5 text-center">
 
                 <h1>Checkout</h1>
 
                 <p>No tienes productos para comprar.</p>
 
+
                 <Link href="/productos" className="btn btn-primary">
+
                     Ver productos
 
                 </Link>
@@ -125,12 +212,15 @@ export default function Checkout() {
 
 
     return (
+
         <main className="container my-5">
 
             <h1 className="text-center mb-4">
+
                 Finalizar compra
 
             </h1>
+
 
             <div className="row g-4">
 
@@ -142,93 +232,74 @@ export default function Checkout() {
 
                             <label className="form-label">
                                 Nombre completo
-
                             </label>
 
+
                             <input
-                                type="text"
                                 className="form-control"
-                                value={nombre}
-                                onChange={(evento) => setNombre(evento.target.value)}
-                                required
+                                value={usuario.nombre}
+                                readOnly
                             />
 
+
                         </div>
+
 
                         <div className="mb-3">
 
                             <label className="form-label">
                                 Correo electrónico
-                                
                             </label>
 
+
                             <input
-                                type="email"
                                 className="form-control"
-                                value={correo}
-                                onChange={(evento) => setCorreo(evento.target.value)}
-                                required
+                                value={usuario.email}
+                                readOnly
                             />
 
                         </div>
+
 
                         <div className="mb-3">
 
                             <label className="form-label">
                                 Tipo de entrega
-
                             </label>
 
-                            <select
-                                className="form-select"
-                                value={entrega}
-                                onChange={(evento) => setEntrega(evento.target.value)}
-                            >
-                                <option value="digital">
-                                    Entrega digital
 
-                                </option>
-
-                                <option value="domicilio">
-                                    Entrega a domicilio
-
-                                </option>
-
-                            </select>
+                            <input
+                                className="form-control"
+                                value="Entrega digital"
+                                readOnly
+                            />
 
                         </div>
 
-                        {entrega === "domicilio" && (
-
-                            <div className="mb-3">
-
-                                <label className="form-label">
-                                    Dirección de entrega
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={direccion}
-                                    onChange={(evento) => setDireccion(evento.target.value)}
-                                    required
-                                />
-
-                            </div>
-
-                        )}
 
                         <button
                             type="submit"
                             className="btn btn-success"
+                            disabled={cargando}
                         >
-                            Confirmar compra
+
+                            {cargando
+                                ? "Procesando compra..."
+                                : "Confirmar compra"}
 
                         </button>
 
-                    </form>
 
+                        {mensaje && (
+
+                            <p className="text-danger mt-3">
+
+                                {mensaje}
+
+                            </p>
+
+                        )}
+                    </form>
                 </div>
 
 
@@ -241,8 +312,8 @@ export default function Checkout() {
                         {carrito.map((producto, index) => (
 
                             <p key={index}>
-                                {producto.nombre} -
-                                ${producto.precio.toLocaleString("es-CL")}
+
+                                {producto.nombre} - ${Number(producto.precio).toLocaleString("es-CL")}
 
                             </p>
 
@@ -251,17 +322,14 @@ export default function Checkout() {
                         <hr />
 
                         <h4>
-                            Total: ${total.toLocaleString("es-CL")}
-                            
+
+                            Total estimado: ${total.toLocaleString("es-CL")}
+
                         </h4>
 
                     </div>
-
                 </div>
-
             </div>
-
         </main>
     );
-
 }
