@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { peticionApi } from "../../lib/api";
+import { formatearPrecio } from "../../lib/precios";
 
 
 const formularioInicial = {
@@ -29,10 +30,14 @@ export default function Admin() {
     const [formulario, setFormulario] = useState(formularioInicial);
 
     const [editando, setEditando] = useState(null);
+    const [detalle, setDetalle] = useState(null);
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
+
+
+    const esAdmin = usuario?.rol === "ADMIN";
 
 
     useEffect(() => {
@@ -45,6 +50,7 @@ export default function Admin() {
 
                 setUsuario(perfil);
 
+
                 if (!["ADMIN", "VENDEDOR"].includes(perfil.rol)) {
 
                     return;
@@ -52,16 +58,18 @@ export default function Admin() {
                 }
 
 
-                const [listaProductos, listaCategorias] =
-                    await Promise.all([
-
-                        peticionApi("/productos/todos"),
-                        peticionApi("/categorias")
-
-                    ]);
+                const listaProductos = await peticionApi("/productos/todos");
 
                 setProductos(listaProductos);
-                setCategorias(listaCategorias);
+
+
+                if (perfil.rol === "ADMIN") {
+
+                    const listaCategorias = await peticionApi("/categorias");
+
+                    setCategorias(listaCategorias);
+
+                }
 
             } catch (error) {
 
@@ -74,6 +82,7 @@ export default function Admin() {
             }
 
         }
+
 
         iniciarPanel();
 
@@ -115,7 +124,8 @@ export default function Admin() {
 
         evento.preventDefault();
 
-        if (guardando) return;
+        if (!esAdmin || guardando) return;
+
 
         setMensaje("");
         setError("");
@@ -157,13 +167,12 @@ export default function Admin() {
                     `/productos/${editando}?categoriaId=${formulario.categoriaId}`,
 
                     {
-
                         method: "PUT",
                         body: JSON.stringify(datos)
-
                     }
 
                 );
+
 
                 setMensaje("Producto actualizado correctamente.");
 
@@ -174,13 +183,12 @@ export default function Admin() {
                     `/productos?categoriaId=${formulario.categoriaId}`,
 
                     {
-
                         method: "POST",
                         body: JSON.stringify(datos)
-
                     }
 
                 );
+
 
                 setMensaje("Producto agregado correctamente.");
 
@@ -206,7 +214,12 @@ export default function Admin() {
 
     function editarProducto(producto) {
 
+        if (!esAdmin) return;
+
+
         setEditando(producto.id);
+        setDetalle(null);
+
 
         setFormulario({
 
@@ -227,6 +240,21 @@ export default function Admin() {
         setMensaje("");
         setError("");
 
+
+        window.scrollTo({
+
+            top: 0,
+            behavior: "smooth"
+
+        });
+
+    }
+
+
+    function verDetalle(producto) {
+
+        setDetalle(producto);
+
         window.scrollTo({
 
             top: 0,
@@ -239,7 +267,7 @@ export default function Admin() {
 
     async function cambiarEstado(producto) {
 
-        if (guardando || usuario.rol !== "ADMIN") return;
+        if (guardando || !esAdmin) return;
 
 
         const accion = producto.activo
@@ -269,6 +297,7 @@ export default function Admin() {
 
                 });
 
+
                 setMensaje("Producto desactivado correctamente.");
 
             } else {
@@ -278,12 +307,11 @@ export default function Admin() {
                     `/productos/${producto.id}/restaurar`,
 
                     {
-
                         method: "PATCH"
-
                     }
 
                 );
+
 
                 setMensaje("Producto restaurado correctamente.");
 
@@ -296,6 +324,8 @@ export default function Admin() {
 
             }
 
+
+            setDetalle(null);
 
             await cargarProductos();
 
@@ -339,7 +369,9 @@ export default function Admin() {
                     Debes iniciar sesión para acceder a la administración.
                 </p>
 
+
                 {error && <p className="text-danger">{error}</p>}
+
 
                 <Link href="/login" className="btn btn-primary">
 
@@ -364,6 +396,7 @@ export default function Admin() {
 
                 <p>No tienes permisos para acceder a esta sección.</p>
 
+
                 <Link href="/" className="btn btn-primary">
 
                     Volver al inicio
@@ -383,15 +416,29 @@ export default function Admin() {
 
             <h1 className="text-center mb-4">
 
-                Administración de productos
+                {esAdmin
+                    ? "Administración de productos"
+                    : "Consulta de productos"}
 
             </h1>
+
 
             <p className="text-center">
 
                 Usuario: {usuario.nombre} | Rol: {usuario.rol}
 
             </p>
+
+
+            {!esAdmin && (
+
+                <div className="alert alert-info">
+
+                    Puedes consultar los productos y sus detalles.
+
+                </div>
+
+            )}
 
 
             {mensaje && (
@@ -416,291 +463,342 @@ export default function Admin() {
             )}
 
 
-            <div className="card p-4 mb-4">
+            {detalle && (
 
-                <h2 className="h4 mb-3">
+                <div className="card p-4 mb-4">
 
-                    {editando !== null
-                        ? "Editar producto"
-                        : "Agregar producto"}
-
-                </h2>
+                    <h2 className="mb-4">Detalle del producto</h2>
 
 
-                <form onSubmit={guardarProducto}>
+                    <div className="row align-items-center">
 
-                    <div className="mb-3">
+                        <div className="col-md-4">
 
-                        <label className="form-label">
+                            {detalle.imagen && (
 
-                            Nombre del producto
+                                <img
+                                    src={detalle.imagen}
+                                    alt={detalle.nombre}
+                                    className="img-fluid rounded mb-3"
+                                />
 
-                        </label>
-
-                        <input
-                            className="form-control"
-                            name="nombre"
-                            value={formulario.nombre}
-                            onChange={cambiarCampo}
-                            maxLength={150}
-                            required
-                        />
-
-                    </div>
-
-
-                    <div className="mb-3">
-
-                        <label className="form-label">
-
-                            Descripción
-
-                        </label>
-
-                        <textarea
-                            className="form-control"
-                            name="descripcion"
-                            value={formulario.descripcion}
-                            onChange={cambiarCampo}
-                        />
-
-                    </div>
-
-
-                    <div className="row">
-
-                        <div className="col-md-4 mb-3">
-
-                            <label className="form-label">
-
-                                Precio
-
-                            </label>
-
-                            <input
-                                type="number"
-                                className="form-control"
-                                name="precio"
-                                min="1"
-                                step="1"
-                                value={formulario.precio}
-                                onChange={cambiarCampo}
-                                required
-                            />
+                            )}
 
                         </div>
 
 
-                        <div className="col-md-4 mb-3">
+                        <div className="col-md-8">
 
-                            <label className="form-label">
+                            <h3>{detalle.nombre}</h3>
 
-                                Descuento (%)
+                            <p>{detalle.descripcion}</p>
 
-                            </label>
+                            <p>ID: {detalle.id}</p>
 
-                            <input
-                                type="number"
-                                className="form-control"
-                                name="descuento"
-                                min="0"
-                                max="100"
-                                value={formulario.descuento}
-                                onChange={cambiarCampo}
-                                required
-                            />
+                            <p>Precio: ${formatearPrecio(detalle.precio)}</p>
 
-                        </div>
+                            <p>Descuento: {detalle.descuento}%</p>
 
+                            <p>Stock: {detalle.stock}</p>
 
-                        <div className="col-md-4 mb-3">
+                            <p>Categoría: {detalle.categoria}</p>
 
-                            <label className="form-label">
+                            <p>Plataforma: {detalle.plataforma || "No especificada"}</p>
 
-                                Stock
+                            <p>Desarrollador: {detalle.desarrollador || "No especificado"}</p>
 
-                            </label>
+                            <p>Estado: {detalle.activo ? "Activo" : "Inactivo"}</p>
 
-                            <input
-                                type="number"
-                                className="form-control"
-                                name="stock"
-                                min="0"
-                                value={formulario.stock}
-                                onChange={cambiarCampo}
-                                required
-                            />
+                            <p>Destacado: {detalle.destacado ? "Sí" : "No"}</p>
 
                         </div>
-
-                    </div>
-
-
-                    <div className="mb-3">
-
-                        <label className="form-label">
-
-                            Categoría
-
-                        </label>
-
-                        <select
-                            className="form-select"
-                            name="categoriaId"
-                            value={formulario.categoriaId}
-                            onChange={cambiarCampo}
-                            required
-                        >
-
-                            <option value="">
-
-                                Selecciona una categoría
-
-                            </option>
-
-                            {categorias.map((categoria) => (
-
-                                <option
-                                    key={categoria.id}
-                                    value={categoria.id}
-                                >
-
-                                    {categoria.nombre}
-
-                                </option>
-
-                            ))}
-
-                        </select>
-
-                    </div>
-
-
-                    <div className="mb-3">
-
-                        <label className="form-label">
-
-                            Imagen
-
-                        </label>
-
-                        <input
-                            className="form-control"
-                            name="imagen"
-                            placeholder="/img/fortnite.jpg"
-                            value={formulario.imagen}
-                            onChange={cambiarCampo}
-                            maxLength={1000}
-                        />
-
-                    </div>
-
-
-                    <div className="row">
-
-                        <div className="col-md-6 mb-3">
-
-                            <label className="form-label">
-
-                                Plataforma
-
-                            </label>
-
-                            <input
-                                className="form-control"
-                                name="plataforma"
-                                value={formulario.plataforma}
-                                onChange={cambiarCampo}
-                                maxLength={100}
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-6 mb-3">
-
-                            <label className="form-label">
-
-                                Desarrollador
-
-                            </label>
-
-                            <input
-                                className="form-control"
-                                name="desarrollador"
-                                value={formulario.desarrollador}
-                                onChange={cambiarCampo}
-                                maxLength={150}
-                            />
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="form-check mb-3">
-
-                        <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id="destacado"
-                            name="destacado"
-                            checked={formulario.destacado}
-                            onChange={cambiarCampo}
-                        />
-
-                        <label
-                            className="form-check-label"
-                            htmlFor="destacado"
-                        >
-
-                            Producto destacado
-
-                        </label>
 
                     </div>
 
 
                     <button
-                        type="submit"
-                        className="btn btn-success me-2"
-                        disabled={guardando}
+                        type="button"
+                        className="btn btn-secondary mt-3"
+                        onClick={() => setDetalle(null)}
                     >
 
-                        {guardando
-                            ? "Procesando..."
-                            : editando !== null
-                                ? "Guardar cambios"
-                                : "Agregar producto"}
+                        Cerrar detalle
 
                     </button>
 
+                </div>
 
-                    {editando !== null && (
+            )}
+
+
+            {esAdmin && (
+
+                <div className="card p-4 mb-4">
+
+                    <h2 className="h4 mb-3">
+
+                        {editando !== null
+                            ? "Editar producto"
+                            : "Agregar producto"}
+
+                    </h2>
+
+
+                    <form onSubmit={guardarProducto}>
+
+                        <div className="mb-3">
+
+                            <label className="form-label">
+
+                                Nombre del producto
+
+                            </label>
+
+
+                            <input
+                                className="form-control"
+                                name="nombre"
+                                value={formulario.nombre}
+                                onChange={cambiarCampo}
+                                maxLength={150}
+                                required
+                            />
+
+                        </div>
+
+
+                        <div className="mb-3">
+
+                            <label className="form-label">
+
+                                Descripción
+
+                            </label>
+
+
+                            <textarea
+                                className="form-control"
+                                name="descripcion"
+                                value={formulario.descripcion}
+                                onChange={cambiarCampo}
+                            />
+
+                        </div>
+
+
+                        <div className="row">
+
+                            <div className="col-md-4 mb-3">
+
+                                <label className="form-label">Precio</label>
+
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    name="precio"
+                                    min="1"
+                                    step="1"
+                                    value={formulario.precio}
+                                    onChange={cambiarCampo}
+                                    required
+                                />
+
+                            </div>
+
+
+                            <div className="col-md-4 mb-3">
+
+                                <label className="form-label">Descuento (%)</label>
+
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    name="descuento"
+                                    min="0"
+                                    max="100"
+                                    value={formulario.descuento}
+                                    onChange={cambiarCampo}
+                                    required
+                                />
+
+                            </div>
+
+
+                            <div className="col-md-4 mb-3">
+
+                                <label className="form-label">Stock</label>
+
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    name="stock"
+                                    min="0"
+                                    value={formulario.stock}
+                                    onChange={cambiarCampo}
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="mb-3">
+
+                            <label className="form-label">Categoría</label>
+
+
+                            <select
+                                className="form-select"
+                                name="categoriaId"
+                                value={formulario.categoriaId}
+                                onChange={cambiarCampo}
+                                required
+                            >
+
+                                <option value="">
+
+                                    Selecciona una categoría
+
+                                </option>
+
+
+                                {categorias.map((categoria) => (
+
+                                    <option
+                                        key={categoria.id}
+                                        value={categoria.id}
+                                    >
+
+                                        {categoria.nombre}
+
+                                    </option>
+
+                                ))}
+
+                            </select>
+
+                        </div>
+
+
+                        <div className="mb-3">
+
+                            <label className="form-label">Imagen</label>
+
+
+                            <input
+                                className="form-control"
+                                name="imagen"
+                                placeholder="/img/fortnite.jpg"
+                                value={formulario.imagen}
+                                onChange={cambiarCampo}
+                                maxLength={1000}
+                            />
+
+                        </div>
+
+
+                        <div className="row">
+
+                            <div className="col-md-6 mb-3">
+
+                                <label className="form-label">Plataforma</label>
+
+
+                                <input
+                                    className="form-control"
+                                    name="plataforma"
+                                    value={formulario.plataforma}
+                                    onChange={cambiarCampo}
+                                    maxLength={100}
+                                />
+
+                            </div>
+
+
+                            <div className="col-md-6 mb-3">
+
+                                <label className="form-label">Desarrollador</label>
+
+
+                                <input
+                                    className="form-control"
+                                    name="desarrollador"
+                                    value={formulario.desarrollador}
+                                    onChange={cambiarCampo}
+                                    maxLength={150}
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="form-check mb-3">
+
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                id="destacado"
+                                name="destacado"
+                                checked={formulario.destacado}
+                                onChange={cambiarCampo}
+                            />
+
+
+                            <label
+                                className="form-check-label"
+                                htmlFor="destacado"
+                            >
+
+                                Producto destacado
+
+                            </label>
+
+                        </div>
+
 
                         <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={limpiarFormulario}
+                            type="submit"
+                            className="btn btn-success me-2"
                             disabled={guardando}
                         >
 
-                            Cancelar
+                            {guardando
+                                ? "Procesando..."
+                                : editando !== null
+                                    ? "Guardar cambios"
+                                    : "Agregar producto"}
 
                         </button>
 
-                    )}
 
-                </form>
+                        {editando !== null && (
 
-            </div>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={limpiarFormulario}
+                                disabled={guardando}
+                            >
+
+                                Cancelar
+
+                            </button>
+
+                        )}
+
+                    </form>
+
+                </div>
+
+            )}
 
 
-            <h2 className="mb-3">
-
-                Lista de productos
-
-            </h2>
+            <h2 className="mb-3">Lista de productos</h2>
 
 
             <div className="table-responsive">
@@ -732,17 +830,11 @@ export default function Admin() {
 
                                 <td>{producto.id}</td>
 
-
                                 <td>{producto.nombre}</td>
-
 
                                 <td>{producto.categoria}</td>
 
-
-                                <td>
-                                    ${Number(producto.precio).toLocaleString("es-CL")}
-                                </td>
-
+                                <td>${formatearPrecio(producto.precio)}</td>
 
                                 <td>{producto.stock}</td>
 
@@ -765,31 +857,45 @@ export default function Admin() {
                                 <td>
 
                                     <button
-                                        className="btn btn-warning btn-sm me-2"
-                                        onClick={() => editarProducto(producto)}
-                                        disabled={guardando}
+                                        className="btn btn-info btn-sm me-2"
+                                        onClick={() => verDetalle(producto)}
                                     >
 
-                                        Editar
+                                        Ver detalle
 
                                     </button>
 
 
-                                    {usuario.rol === "ADMIN" && (
+                                    {esAdmin && (
 
-                                        <button
-                                            className={producto.activo
-                                                ? "btn btn-danger btn-sm"
-                                                : "btn btn-success btn-sm"}
-                                            onClick={() => cambiarEstado(producto)}
-                                            disabled={guardando}
-                                        >
+                                        <>
 
-                                            {producto.activo
-                                                ? "Eliminar"
-                                                : "Restaurar"}
+                                            <button
+                                                className="btn btn-warning btn-sm me-2"
+                                                onClick={() => editarProducto(producto)}
+                                                disabled={guardando}
+                                            >
 
-                                        </button>
+                                                Editar
+
+                                            </button>
+
+
+                                            <button
+                                                className={producto.activo
+                                                    ? "btn btn-danger btn-sm"
+                                                    : "btn btn-success btn-sm"}
+                                                onClick={() => cambiarEstado(producto)}
+                                                disabled={guardando}
+                                            >
+
+                                                {producto.activo
+                                                    ? "Eliminar"
+                                                    : "Restaurar"}
+
+                                            </button>
+
+                                        </>
 
                                     )}
 
