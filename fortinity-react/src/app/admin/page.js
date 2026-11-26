@@ -918,6 +918,12 @@ export default function Admin() {
 
             </Link>
 
+            <Link href="/admin/ordenes" className="btn btn-info ms-2">
+
+                Consultar órdenes
+
+            </Link>
+
         </main>
     );
 }
