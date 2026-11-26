@@ -924,6 +924,20 @@ export default function Admin() {
 
             </Link>
 
+
+            {esAdmin && (
+
+                <Link
+                    href="/admin/usuarios"
+                    className="btn btn-warning ms-2"
+                >
+
+                    Administrar usuarios
+
+                </Link>
+
+            )}
+
         </main>
     );
 }
