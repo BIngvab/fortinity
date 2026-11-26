@@ -157,6 +157,7 @@ Se verificaron 11 pruebas unitarias relacionadas con el catálogo original, prec
 Las pruebas de integración y seguridad se realizaron adicionalmente mediante Postman y Swagger.
 
 
+
 ## Seguridad
 
 El sistema utiliza autenticación JWT y autorización basada en roles.
@@ -164,6 +165,26 @@ El sistema utiliza autenticación JWT y autorización basada en roles.
 Los permisos se verifican tanto en la interfaz del frontend como en el backend, siendo este último el responsable de autorizar las operaciones.
 
 El archivo `.env.local` se mantiene excluido del control de versiones.
+
+
+## Renovación automática del JWT
+
+Los tokens JWT tienen una duración de 3600 segundos.
+
+El frontend comprueba la expiración del token antes de realizar solicitudes autenticadas.
+
+Cuando quedan cinco minutos o menos de vigencia, se solicita la renovación mediante el endpoint:
+
+POST /api/v1/auth/refresh
+
+El nuevo token se almacena en sessionStorage y permite continuar utilizando la aplicación.
+
+Si el token ha expirado, se cierra la sesión y el usuario debe autenticarse nuevamente.
+
+La renovación requiere un JWT vigente y no utiliza un refresh token independiente.
+
+Esta funcionalidad fue verificada mediante Postman y las herramientas de desarrollo del navegador.
+
 
 
 ## Repositorios
